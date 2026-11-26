@@ -10,9 +10,20 @@ use Illuminate\View\View;
 class PublicController extends Controller
 {
     /**
-     * Menampilkan halaman beranda publik dengan profil UMKM, filter kategori, dan daftar menu.
+     * Menampilkan halaman Home publik dengan hero, produk unggulan, tentang kami, dan kontak.
      */
-    public function index(Request $request): View
+    public function home(): View
+    {
+        $featuredProducts = Product::with('category')->latest()->take(3)->get();
+        $categories = Category::withCount('products')->orderBy('name')->get();
+
+        return view('public.home', compact('featuredProducts', 'categories'));
+    }
+
+    /**
+     * Menampilkan halaman katalog produk lengkap dengan filter kategori.
+     */
+    public function products(Request $request): View
     {
         $categories = Category::withCount('products')->orderBy('name')->get();
         $activeCategoryId = $request->query('category');
@@ -25,7 +36,7 @@ class PublicController extends Controller
 
         $products = $productsQuery->get();
 
-        return view('public.home', compact('categories', 'products', 'activeCategoryId'));
+        return view('public.products', compact('categories', 'products', 'activeCategoryId'));
     }
 
     /**

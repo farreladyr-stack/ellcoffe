@@ -1,145 +1,157 @@
-@extends('layouts.app')
+@extends('layouts.public')
 
-@section('title', 'EllCoffe — Warm Artisan Cafe & Roastery | PT EllCoffe Nusantara')
+@section('title', 'Ellcoffee — A Little Coffee, A Lot of Comfort.')
 
 @section('content')
-    <!-- Hero & Profil Usaha -->
-    <section class="py-5 border-bottom" style="background: linear-gradient(180deg, #EFE6DD 0%, #FAF6F1 100%); border-color: rgba(74, 44, 24, 0.12) !important;">
-        <div class="container py-lg-4">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
             <div class="row align-items-center gy-4">
-                <div class="col-lg-7">
-                    <span class="badge badge-caramel rounded-pill px-3 py-2 mb-3">
-                        <i class="bi bi-award me-1"></i> PT EllCoffe Nusantara &bull; UMKM Kopi Lokal
+                <div class="col-lg-6">
+                    <span class="badge badge-category rounded-pill px-3 py-2 mb-3">
+                        <i class="bi bi-cup-hot me-1 text-caramel"></i> Ellcoffee Coffee Shop
                     </span>
-                    <h1 class="display-5 fw-bold mb-3" style="color: var(--espresso-dark);">
-                        Kehangatan Biji Kopi Nusantara dalam Setiap Seduhan
+                    <h1 class="display-5 fw-bold mb-3">
+                        A Little Coffee, A Lot of Comfort.
                     </h1>
-                    <p class="lead text-muted-cafe mb-4" style="line-height: 1.75;">
-                        <strong>EllCoffe</strong> adalah UMKM kopi lokal di bawah naungan <strong>PT EllCoffe Nusantara</strong> yang berkomitmen mengangkat cita rasa biji kopi terbaik dari petani Gayo, Toraja, hingga Jawa Timur. Melalui proses sangrai yang presisi dan teknik seduh artisan, kami menghadirkan pengalaman menikmati kopi yang hangat, bersahabat, dan berkesan.
+                    <p class="lead text-muted-ell mb-4">
+                        Selamat datang di <strong>Ellcoffee</strong>. Kami menyajikan minuman kopi dan non-kopi pilihan dari biji kopi lokal Nusantara, diracik dengan penuh kehangatan untuk menemani setiap aktivitas Anda.
                     </p>
                     <div class="d-flex flex-wrap gap-3">
-                        <a href="#daftar-menu" class="btn btn-roasted btn-lg px-4 rounded-pill">
-                            <i class="bi bi-cup-hot me-2"></i> Jelajahi Menu
+                        <a href="{{ route('public.products') }}" class="btn btn-coffee">
+                            <i class="bi bi-cup-hot me-2"></i>Lihat Menu
                         </a>
-                        <a href="{{ route('admin.products.index') }}" class="btn btn-outline-roasted btn-lg px-4 rounded-pill">
-                            <i class="bi bi-gear me-2"></i> Kelola Produk
+                        <a href="#tentang" class="btn btn-outline-caramel">
+                            Tentang Kami
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-5">
-                    <div class="cafe-card p-4 p-lg-5 text-center shadow-sm">
-                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 76px; height: 76px; background-color: var(--espresso-dark);">
-                            <i class="bi bi-cup-hot-fill fs-2" style="color: var(--caramel-gold);"></i>
-                        </div>
-                        <h3 class="h4 fw-bold section-title mb-2">Filosofi Seduhan Kami</h3>
-                        <p class="small text-muted-cafe mb-4">
-                            Setiap cangkir diracik segar saat dipesan menggunakan biji kopi sangrai pilihan untuk menjaga aroma karamel, cokelat, dan rempah khas Nusantara.
-                        </p>
-                        <div class="row g-2 text-start">
-                            <div class="col-6">
-                                <div class="p-3 rounded-3" style="background-color: var(--cream-paper);">
-                                    <div class="fw-bold price-caramel fs-5">{{ $categories->count() }}</div>
-                                    <div class="small text-muted-cafe">Kategori Pilihan</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 rounded-3" style="background-color: var(--cream-paper);">
-                                    <div class="fw-bold price-caramel fs-5">{{ $products->count() }}</div>
-                                    <div class="small text-muted-cafe">Menu Tersedia</div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-lg-6">
+                    <div class="hero-image-frame">
+                        <img src="{{ asset('images/hero-coffee.jpg') }}"
+                             alt="Ellcoffee Artisan Latte"
+                             class="w-100 object-fit-cover"
+                             style="max-height: 410px;">
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Filter Kategori & Daftar Menu -->
-    <section id="daftar-menu" class="py-5">
-        <div class="container">
+    <!-- Produk Unggulan -->
+    <section class="py-5">
+        <div class="container py-lg-2">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
                 <div>
-                    <span class="text-uppercase fw-bold small" style="color: var(--caramel-gold); letter-spacing: 0.08em;">
-                        Katalog Minuman &amp; Kopi
-                    </span>
-                    <h2 class="h2 fw-bold section-title mb-0 mt-1">Menu Pilihan EllCoffe</h2>
+                    <span class="text-uppercase small fw-semibold text-caramel" style="letter-spacing: 0.08em;">Pilihan Favorit</span>
+                    <h2 class="h2 fw-bold mb-0 mt-1">Produk Unggulan Ellcoffee</h2>
                 </div>
-                <p class="text-muted-cafe mb-0 small">
-                    Pilih kategori di bawah untuk menyaring menu sesuai selera Anda.
-                </p>
-            </div>
-
-            <!-- Chip Filter Kategori -->
-            <div class="d-flex flex-wrap gap-2 mb-4 pb-2">
-                <a href="{{ route('public.home') }}#daftar-menu"
-                   class="category-chip {{ empty($activeCategoryId) ? 'active' : '' }}">
-                    <i class="bi bi-grid"></i> Semua Menu
+                <a href="{{ route('public.products') }}" class="btn btn-sm btn-outline-caramel px-3">
+                    Lihat Semua Menu <i class="bi bi-arrow-right ms-1"></i>
                 </a>
-                @foreach ($categories as $category)
-                    <a href="{{ route('public.home', ['category' => $category->id]) }}#daftar-menu"
-                       class="category-chip {{ (string) $activeCategoryId === (string) $category->id ? 'active' : '' }}">
-                        <i class="bi bi-cup-straw"></i>
-                        <span>{{ $category->name }}</span>
-                        <span class="badge rounded-pill {{ (string) $activeCategoryId === (string) $category->id ? 'bg-light text-dark' : 'badge-caramel' }}">
-                            {{ $category->products_count }}
-                        </span>
-                    </a>
-                @endforeach
             </div>
 
-            <!-- Grid Produk -->
-            @if ($products->isEmpty())
-                <div class="cafe-card p-5 text-center">
-                    <i class="bi bi-cup fs-1 mb-3 d-block" style="color: var(--caramel-gold);"></i>
-                    <h3 class="h5 fw-bold section-title">Belum Ada Menu pada Kategori Ini</h3>
-                    <p class="text-muted-cafe mb-3">Silakan pilih kategori lain atau tambahkan menu baru melalui panel admin.</p>
-                    <a href="{{ route('public.home') }}" class="btn btn-roasted rounded-pill px-4">Lihat Semua Menu</a>
-                </div>
-            @else
-                <div class="row g-4">
-                    @foreach ($products as $product)
-                        <div class="col-12 col-sm-6 col-lg-4">
-                            <article class="cafe-card h-100 d-flex flex-column">
-                                @if ($product->image)
-                                    <img src="{{ asset('storage/' . $product->image) }}"
-                                         alt="{{ $product->name }}"
-                                         class="w-100 object-fit-cover"
-                                         style="height: 230px;">
-                                @else
-                                    <div class="coffee-placeholder w-100" style="height: 230px;">
-                                        <i class="bi bi-cup-hot fs-1 mb-2"></i>
-                                        <span class="small fw-semibold">{{ $product->category->name ?? 'EllCoffe' }}</span>
-                                    </div>
-                                @endif
-
-                                <div class="p-4 d-flex flex-column flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                                        <span class="badge badge-caramel rounded-pill px-3 py-1">
-                                            {{ $product->category->name ?? 'Tanpa Kategori' }}
-                                        </span>
-                                        <span class="price-caramel fs-5 text-nowrap">
-                                            Rp {{ number_format($product->price, 0, ',', '.') }}
-                                        </span>
-                                    </div>
-
-                                    <h3 class="h5 fw-bold mb-2" style="color: var(--espresso-dark);">
-                                        {{ $product->name }}
-                                    </h3>
-
-                                    <p class="small text-muted-cafe mb-4 flex-grow-1">
-                                        {{ \Illuminate\Support\Str::limit($product->description, 110) }}
-                                    </p>
-
-                                    <a href="{{ route('public.detail', $product->id) }}" class="btn btn-roasted w-100 rounded-pill">
-                                        Lihat Detail <i class="bi bi-arrow-right ms-1"></i>
-                                    </a>
+            <div class="row g-4">
+                @forelse ($featuredProducts as $product)
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <article class="ell-card h-100 d-flex flex-column">
+                            @if ($product->image)
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="ell-card-img">
+                            @else
+                                <div class="ell-placeholder">
+                                    <i class="bi bi-cup-hot fs-1 mb-2"></i>
+                                    <span class="small">{{ $product->category->name ?? 'Ellcoffee' }}</span>
                                 </div>
-                            </article>
+                            @endif
+
+                            <div class="p-4 d-flex flex-column flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge badge-category rounded-pill px-3 py-1">
+                                        {{ $product->category->name ?? 'Menu' }}
+                                    </span>
+                                    <span class="price-tag">
+                                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                                    </span>
+                                </div>
+                                <h3 class="h5 fw-bold mb-2">{{ $product->name }}</h3>
+                                <p class="small text-muted-ell mb-4 flex-grow-1">
+                                    {{ \Illuminate\Support\Str::limit($product->description, 95) }}
+                                </p>
+                                <a href="{{ route('public.detail', $product->id) }}" class="btn btn-coffee w-100 btn-sm">
+                                    Lihat Detail
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                @empty
+                    <div class="col-12">
+                        <div class="ell-card p-5 text-center text-muted-ell">
+                            Belum ada produk unggulan yang tersedia.
                         </div>
-                    @endforeach
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </section>
+
+    <!-- Tentang Usaha Ellcoffee -->
+    <section id="tentang" class="about-section py-5">
+        <div class="container py-lg-3">
+            <div class="row align-items-center gy-4">
+                <div class="col-lg-5">
+                    <div class="hero-image-frame">
+                        <img src="{{ asset('storage/products/v60-gayo.jpg') }}"
+                             alt="Suasana Seduh Kopi Ellcoffee"
+                             class="w-100 object-fit-cover"
+                             style="max-height: 360px;">
+                    </div>
                 </div>
-            @endif
+                <div class="col-lg-7 ps-lg-5">
+                    <span class="text-uppercase small fw-semibold text-caramel" style="letter-spacing: 0.08em;">Tentang Usaha</span>
+                    <h2 class="h2 fw-bold mt-1 mb-3">Cerita di Balik Setiap Cangkir Ellcoffee</h2>
+                    <p class="text-muted-ell mb-3">
+                        <strong>Ellcoffee</strong> lahir sebagai usaha coffee shop UMKM yang ingin menghadirkan pengalaman ngopi yang hangat, tenang, dan terjangkau bagi semua kalangan.
+                    </p>
+                    <p class="text-muted-ell mb-4">
+                        Kami bekerja sama dengan petani kopi lokal untuk memilih biji kopi terbaik dari Aceh Gayo hingga Toraja, serta menghadirkan pilihan minuman non-kopi seperti Matcha Ell dan Chocolate Cream yang diracik segar setiap hari.
+                    </p>
+                    <div class="row g-3">
+                        @foreach ($categories as $cat)
+                            <div class="col-4">
+                                <div class="p-3 rounded-3 bg-white border text-center" style="border-color: var(--latte) !important;">
+                                    <div class="fw-bold text-coffee fs-5">{{ $cat->products_count }}</div>
+                                    <div class="small text-muted-ell">{{ $cat->name }}</div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Kontak Section -->
+    <section id="kontak" class="py-5">
+        <div class="container py-lg-2">
+            <div class="ell-card p-4 p-lg-5">
+                <div class="row align-items-center gy-4">
+                    <div class="col-lg-7">
+                        <span class="text-uppercase small fw-semibold text-caramel" style="letter-spacing: 0.08em;">Kunjungi Kami</span>
+                        <h2 class="h3 fw-bold mt-1 mb-2">Ruang Nyaman untuk Bercerita &amp; Menikmati Kopi</h2>
+                        <p class="text-muted-ell mb-0">
+                            Datang langsung ke kedai Ellcoffee atau hubungi kami untuk pemesanan acara dan kolaborasi UMKM.
+                        </p>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="d-flex flex-column gap-2 small">
+                            <div><i class="bi bi-geo-alt-fill text-caramel me-2"></i><strong>Alamat:</strong> Jl. Kopi Nusantara No. 24, Yogyakarta</div>
+                            <div><i class="bi bi-clock-fill text-caramel me-2"></i><strong>Jam Buka:</strong> Setiap Hari, 08.00 – 22.00 WIB</div>
+                            <div><i class="bi bi-envelope-fill text-caramel me-2"></i><strong>Email:</strong> halo@ellcoffee.id</div>
+                            <div><i class="bi bi-whatsapp text-caramel me-2"></i><strong>WhatsApp:</strong> +62 812-3456-7890</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 @endsection

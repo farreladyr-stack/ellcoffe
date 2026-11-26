@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -19,105 +20,115 @@ class EllCoffeTest extends TestCase
         $this->seed();
     }
 
-    public function test_public_home_displays_profile_categories_and_products(): void
+    public function test_public_pages_load_without_login(): void
     {
-        $response = $this->get('/');
+        $this->get('/')->assertStatus(200)->assertSee('Ellcoffee')->assertSee('A Little Coffee, A Lot of Comfort.');
+        $this->get('/produk')->assertStatus(200)->assertSee('Ell Latte')->assertSee('Classic Americano');
 
-        $response->assertStatus(200);
-        $response->assertSee('EllCoffe');
-        $response->assertSee('PT EllCoffe Nusantara');
-        $response->assertSee('Signature Espresso');
-        $response->assertSee('EllCoffe Aren Latte');
-    }
-
-    public function test_public_home_can_filter_by_category(): void
-    {
-        $manualBrew = Category::where('name', 'Manual Brew Nusantara')->firstOrFail();
-
-        $response = $this->get('/?category=' . $manualBrew->id);
-
-        $response->assertStatus(200);
-        $response->assertSee('V60 Aceh Gayo Wine');
-        $response->assertDontSee('EllCoffe Aren Latte');
-    }
-
-    public function test_public_detail_page_displays_product(): void
-    {
         $product = Product::firstOrFail();
+        $this->get('/produk/' . $product->id)->assertStatus(200)->assertSee($product->name);
+    }
 
-        $response = $this->get('/produk/' . $product->id);
+    public function test_public_products_filter_by_category(): void
+    {
+        $nonCoffee = Category::where('name', 'Non Coffee')->firstOrFail();
 
+        $response = $this->get('/produk?category=' . $nonCoffee->id);
         $response->assertStatus(200);
-        $response->assertSee($product->name);
-        $response->assertSee('Rp ' . number_format($product->price, 0, ',', '.'));
+        $response->assertSee('Matcha Ell');
+        $response->assertDontSee('Classic Americano');
     }
 
-    public function test_admin_pages_load_successfully(): void
+    public function test_admin_routes_require_authentication(): void
     {
-        $product = Product::firstOrFail();
-
-        $this->get('/admin/products')->assertStatus(200)->assertSee('Daftar Menu EllCoffe');
-        $this->get('/admin/products/create')->assertStatus(200)->assertSee('Tambah Menu Baru');
-        $this->get('/admin/products/' . $product->id . '/edit')->assertStatus(200)->assertSee('Ubah Data Menu');
+        $this->get('/admin/dashboard')->assertRedirect('/admin/login');
+        $this->get('/admin/products')->assertRedirect('/admin/login');
+        $this->get('/admin/categories')->assertRedirect('/admin/login');
     }
 
-    public function test_admin_store_validates_input(): void
+    public function test_admin_can_login_and_access_dashboard_and_crud_pages(): void
     {
-        $response = $this->post('/admin/products', [
-            'category_id' => 99999,
-            'name' => '',
-            'price' => 500,
-            'description' => '',
-        ]);
+        $admin = User::where('email', 'admin@ellcoffee.id')->firstOrFail();
 
-        $response->assertSessionHasErrors(['category_id', 'name', 'price', 'description']);
+        $this->post('/admin/login', [
+            'email' => 'admin@ellcoffee.id',
+            'password' => 'ellcoffee123',
+        ])->assertRedirect('/admin/dashboard');
+
+        $this->actingAs($admin)->get('/admin/dashboard')->assertStatus(200)->assertSee('Dashboard Admin');
+        $this->actingAs($admin)->get('/admin/products')->assertStatus(200)->assertSee('Data Produk Ellcoffee');
+        $this->actingAs($admin)->get('/admin/categories')->assertStatus(200)->assertSee('Data Kategori');
     }
 
-    public function test_admin_crud_with_image_upload_and_cleanup(): void
+    public function test_admin_product_validation_and_crud_with_image(): void
     {
         Storage::fake('public');
+        $admin = User::where('email', 'admin@ellcoffee.id')->firstOrFail();
         $category = Category::firstOrFail();
 
+        // Validasi input tidak valid
+        $this->actingAs($admin)->post('/admin/products', [
+            'category_id' => 99999,
+            'name' => '',
+            'price' => -500,
+            'description' => '',
+        ])->assertSessionHasErrors(['category_id', 'name', 'price', 'description']);
+
         $pngBinary = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
-        $file1 = UploadedFile::fake()->createWithContent('kopi1.png', $pngBinary);
+        $file1 = UploadedFile::fake()->createWithContent('latte.png', $pngBinary);
 
-        $storeResponse = $this->post('/admin/products', [
+        $this->actingAs($admin)->post('/admin/products', [
             'category_id' => $category->id,
-            'name' => 'Kopi Tubruk Nusantara',
-            'price' => 22000,
-            'description' => 'Kopi tubruk klasik dengan aroma rempah dan cokelat.',
+            'name' => 'Hazelnut Ell',
+            'price' => 28000,
+            'description' => 'Espresso lembut dengan sirup hazelnut panggang.',
             'image' => $file1,
-        ]);
+        ])->assertRedirect('/admin/products');
 
-        $storeResponse->assertRedirect('/admin/products');
-        $storeResponse->assertSessionHas('success');
-
-        $product = Product::where('name', 'Kopi Tubruk Nusantara')->firstOrFail();
-        $this->assertNotNull($product->image);
+        $product = Product::where('name', 'Hazelnut Ell')->firstOrFail();
         Storage::disk('public')->assertExists($product->image);
         $oldImage = $product->image;
 
-        // Update dengan gambar baru -> gambar lama harus terhapus
-        $file2 = UploadedFile::fake()->createWithContent('kopi2.png', $pngBinary);
-        $updateResponse = $this->put('/admin/products/' . $product->id, [
+        // Update dengan gambar baru
+        $file2 = UploadedFile::fake()->createWithContent('latte2.png', $pngBinary);
+        $this->actingAs($admin)->put('/admin/products/' . $product->id, [
             'category_id' => $category->id,
-            'name' => 'Kopi Tubruk Spesial',
-            'price' => 25000,
-            'description' => 'Kopi tubruk spesial dengan biji pilihan.',
+            'name' => 'Hazelnut Ell Spesial',
+            'price' => 30000,
+            'description' => 'Varian spesial dengan cream foam.',
             'image' => $file2,
-        ]);
+        ])->assertRedirect('/admin/products');
 
-        $updateResponse->assertRedirect('/admin/products');
         $product->refresh();
-        $this->assertEquals('Kopi Tubruk Spesial', $product->name);
         Storage::disk('public')->assertMissing($oldImage);
         Storage::disk('public')->assertExists($product->image);
         $newImage = $product->image;
 
-        // Delete -> produk dan gambar harus terhapus
-        $deleteResponse = $this->delete('/admin/products/' . $product->id);
-        $deleteResponse->assertRedirect('/admin/products');
+        // Hapus produk
+        $this->actingAs($admin)->delete('/admin/products/' . $product->id)->assertRedirect('/admin/products');
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
         Storage::disk('public')->assertMissing($newImage);
+    }
+
+    public function test_admin_category_crud(): void
+    {
+        $admin = User::where('email', 'admin@ellcoffee.id')->firstOrFail();
+
+        $this->actingAs($admin)->post('/admin/categories', [
+            'name' => 'Pastry',
+            'description' => 'Aneka roti dan kue pendamping kopi.',
+        ])->assertRedirect('/admin/categories');
+
+        $category = Category::where('name', 'Pastry')->firstOrFail();
+
+        $this->actingAs($admin)->put('/admin/categories/' . $category->id, [
+            'name' => 'Artisan Pastry',
+            'description' => 'Roti artisan hangat setiap pagi.',
+        ])->assertRedirect('/admin/categories');
+
+        $this->assertDatabaseHas('categories', ['name' => 'Artisan Pastry']);
+
+        $this->actingAs($admin)->delete('/admin/categories/' . $category->id)->assertRedirect('/admin/categories');
+        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
     }
 }

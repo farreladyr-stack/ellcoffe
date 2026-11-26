@@ -1,115 +1,121 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'Kelola Produk — Admin EllCoffe')
+@section('title', 'Data Produk — Admin Ellcoffee')
+@section('page_title', 'Data Produk')
 
 @section('content')
-    <section class="py-5">
-        <div class="container">
-            <!-- Header Admin -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-                <div>
-                    <span class="text-uppercase fw-bold small" style="color: var(--caramel-gold); letter-spacing: 0.08em;">
-                        Panel Manajemen UMKM
-                    </span>
-                    <h1 class="h2 fw-bold section-title mb-1">Daftar Menu EllCoffe</h1>
-                    <p class="text-muted-cafe small mb-0">
-                        Total <strong>{{ $products->count() }}</strong> menu terdaftar dalam <strong>{{ $totalCategories }}</strong> kategori.
-                    </p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('public.home') }}" class="btn btn-outline-roasted rounded-pill px-3">
-                        <i class="bi bi-eye me-1"></i> Lihat Beranda
-                    </a>
-                    <a href="{{ route('admin.products.create') }}" class="btn btn-roasted rounded-pill px-4">
-                        <i class="bi bi-plus-circle me-1"></i> Tambah Menu
-                    </a>
-                </div>
-            </div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Data Produk Ellcoffee</h1>
+            <p class="small text-muted-ell mb-0">Kelola seluruh menu kopi &amp; non-kopi yang tampil di website.</p>
+        </div>
+        <a href="{{ route('admin.products.create') }}" class="btn btn-coffee btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Tambah Produk
+        </a>
+    </div>
 
-            <!-- Notifikasi Sukses -->
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="background-color: #e6f4ea; color: #1e4620;">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+    <div class="ell-card">
+        <div class="table-responsive">
+            <table class="table table-ellcoffee align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 55px;">No</th>
+                        <th style="width: 85px;">Foto</th>
+                        <th>Nama Produk</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th class="text-end" style="width: 190px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($products as $index => $product)
+                        <tr>
+                            <td class="fw-semibold">{{ $index + 1 }}</td>
+                            <td>
+                                @if ($product->image)
+                                    <img src="{{ asset('storage/' . $product->image) }}"
+                                         alt="{{ $product->name }}"
+                                         class="rounded-3 object-fit-cover border"
+                                         style="width: 60px; height: 60px;">
+                                @else
+                                    <div class="ell-placeholder rounded-3" style="width: 60px; height: 60px;">
+                                        <i class="bi bi-cup-hot"></i>
+                                    </div>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-espresso">{{ $product->name }}</div>
+                                <div class="small text-muted-ell">{{ \Illuminate\Support\Str::limit($product->description, 60) }}</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-category rounded-pill px-3 py-1">
+                                    {{ $product->category->name ?? '-' }}
+                                </span>
+                            </td>
+                            <td class="price-tag text-nowrap">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-2">
+                                    <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-outline-coffee">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-danger rounded-pill px-3"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteProductModal"
+                                            data-action="{{ route('admin.products.destroy', $product->id) }}"
+                                            data-name="{{ $product->name }}">
+                                        <i class="bi bi-trash"></i> Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted-ell">
+                                Belum ada data produk. Klik <strong>Tambah Produk</strong> untuk memulai.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-            <!-- Tabel Produk -->
-            <div class="cafe-card shadow-sm">
-                <div class="table-responsive">
-                    <table class="table table-ellcoffe align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th style="width: 60px;">No</th>
-                                <th style="width: 90px;">Foto</th>
-                                <th>Nama Menu</th>
-                                <th>Kategori</th>
-                                <th>Harga</th>
-                                <th class="text-end" style="width: 190px;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($products as $index => $product)
-                                <tr>
-                                    <td class="fw-semibold">{{ $index + 1 }}</td>
-                                    <td>
-                                        @if ($product->image)
-                                            <img src="{{ asset('storage/' . $product->image) }}"
-                                                 alt="{{ $product->name }}"
-                                                 class="rounded-3 object-fit-cover border"
-                                                 style="width: 64px; height: 64px;">
-                                        @else
-                                            <div class="coffee-placeholder rounded-3" style="width: 64px; height: 64px;">
-                                                <i class="bi bi-cup-hot fs-4"></i>
-                                            </div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold" style="color: var(--espresso-dark);">{{ $product->name }}</div>
-                                        <div class="small text-muted-cafe">{{ \Illuminate\Support\Str::limit($product->description, 65) }}</div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-caramel rounded-pill px-3 py-2">
-                                            {{ $product->category->name ?? '-' }}
-                                        </span>
-                                    </td>
-                                    <td class="price-caramel text-nowrap">
-                                        Rp {{ number_format($product->price, 0, ',', '.') }}
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="d-inline-flex gap-2">
-                                            <a href="{{ route('admin.products.edit', $product->id) }}"
-                                               class="btn btn-sm btn-outline-roasted rounded-pill px-3">
-                                                <i class="bi bi-pencil-square me-1"></i> Ubah
-                                            </a>
-                                            <form action="{{ route('admin.products.destroy', $product->id) }}"
-                                                  method="POST"
-                                                  onsubmit="return confirm('Yakin ingin menghapus menu {{ addslashes($product->name) }}?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3">
-                                                    <i class="bi bi-trash me-1"></i> Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-5">
-                                        <i class="bi bi-cup fs-2 d-block mb-2" style="color: var(--caramel-gold);"></i>
-                                        <p class="mb-2 fw-semibold">Belum ada data produk.</p>
-                                        <a href="{{ route('admin.products.create') }}" class="btn btn-sm btn-roasted rounded-pill px-3">
-                                            Tambah Menu Pertama
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+    <!-- Modal Konfirmasi Hapus Produk -->
+    <div class="modal fade" id="deleteProductModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: 1px solid var(--latte);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-espresso">Konfirmasi Hapus Produk</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Apakah Anda yakin ingin menghapus produk <strong id="deleteProductName"></strong>? Gambar produk terkait juga akan dihapus.
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-sm btn-outline-caramel" data-bs-dismiss="modal">Batal</button>
+                    <form id="deleteProductForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger rounded-pill px-4">Ya, Hapus</button>
+                    </form>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+    const deleteProductModal = document.getElementById('deleteProductModal');
+    if (deleteProductModal) {
+        deleteProductModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            document.getElementById('deleteProductName').textContent = button.getAttribute('data-name');
+            document.getElementById('deleteProductForm').setAttribute('action', button.getAttribute('data-action'));
+        });
+    }
+</script>
+@endpush
